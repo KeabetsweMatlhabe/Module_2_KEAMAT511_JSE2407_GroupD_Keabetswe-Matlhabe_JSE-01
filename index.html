@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -12,6 +13,7 @@
         body {
             background-color: #caf0f8;
         }
+
         .search-button {
             background: linear-gradient(to bottom, #d5d4d0, #eeeeec);
             padding: 10px;
@@ -88,16 +90,40 @@
 
         <!-- Main Content -->
         <main class="container mx-auto mt-8">
-            <!-- Categories -->
-            <div class="flex space-x-4 mb-8">
-                <button x-on:click="loadProductsByCategory('all')"
-                    class="py-2 px-4 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300"
-                    :class="{'bg-gray-400': activeCategory === 'all'}">All</button>
-                <template x-for="category in categories" :key="category">
-                    <button x-on:click="loadProductsByCategory(category)"
+            <!-- Categories and Search -->
+            <div class="flex justify-between mb-8">
+                <div class="flex space-x-4">
+                    <div class="relative inline-block text-left">
+                        <button x-on:click="toggleCategoryDropdown"
+                            class="py-2 px-4 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300 flex items-center">
+                            All Categories
+                            <svg class="ml-2 w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        <div x-show="isCategoryDropdownOpen"
+                            class="origin-top-right absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+                            x-cloak>
+                            <div class="py-1">
+                                <template x-for="category in categories" :key="category">
+                                    <a href="#"
+                                        class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                        x-text="category" x-on:click="loadProductsByCategory(category)"></a>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <button x-on:click="loadProductsByCategory('all')"
                         class="py-2 px-4 bg-gray-200 rounded-lg text-gray-700 hover:bg-gray-300"
-                        :class="{'bg-gray-400': activeCategory === category}" x-text="category"></button>
-                </template>
+                        :class="{'bg-gray-400': activeCategory === 'all'}">All</button>
+                </div>
+                <div class="flex">
+                    <input type="text" x-model="searchQuery" placeholder="Search products..."
+                        class="p-2 border border-gray-300 rounded-lg">
+                    <button x-on:click="searchProducts" class="search-button ml-2">Search</button>
+                </div>
             </div>
 
             <!-- Sort Component -->
@@ -117,125 +143,160 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
                 <template x-for="product in filteredProducts" :key="product.id">
                     <div
-                        class="bg-white shadow-md border border-gray-200 rounded-lg max-w-sm p-4 hover:shadow-lg transition-shadow duration-300">
+                        class="bg-white shadow-md border border-gray-200 rounded-lg max-w-sm p-4 hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+                        x-on:click="showProductDetails(product)">
                         <img class="rounded-t-lg w-full h-48 object-cover" :src="product.image" alt="" />
                         <div class="p-5">
                             <h5 class="text-gray-900 text-xl font-medium mb-2" x-text="product.title"></h5>
                             <p class="text-gray-700 text-base mb-4" x-text="product.description"></p>
-                            <p class="text-gray-900 text-xl font-semibold" x-text="'$' + product.price"></p>
-
-                            <!-- Rating Component -->
-                            <div class="flex items-left mb-2">
-                                <template x-for="(star, index) in getRatingStars(product.rating.rate)" :key="index">
-                                    <svg class="w-4 h-4 text-yellow-300 ms-1" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+                            <div class="flex items-center mb-2">
+                                <span class="text-gray-900 font-bold text-lg" x-text="'$' + product.price"></span>
+                                <template x-for="index in 5" :key="index">
+                                    <svg class="w-4 h-4 fill-current text-yellow-500"
+                                        :class="{'text-gray-300': index > Math.round(product.rating.rate)}"
+                                        viewBox="0 0 24 24">
                                         <path
-                                            d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z" />
+                                            d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.793 1.4 8.182L12 18.896l-7.334 3.889 1.4-8.182L.587 9.21l8.2-1.192z" />
                                     </svg>
                                 </template>
-                                <template x-for="(star, index) in getBlankStars(product.rating.rate)" :key="index">
-                                    <svg class="w-4 h-4 ms-1 text-gray-300 dark:text-gray-500" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
-                                        <path
-                                            d="m11 15.566-4.518 2.375a1.532 1.532 0 0 1-2.226-1.616l.863-5.031L1.463 9.2a1.535 1.535 0 0 1 .851-2.624l5.051-.734 2.259-4.577a1.534 1.534 0 0 1 2.752 0l2.259 4.577 5.051.734a1.523 1.523 0 0 1 .852 2.624l-3.656 3.563.863 5.031a1.534 1.534 0 0 1-2.226 1.616L11 15.566Z" />
-                                    </svg>
-                                </template>
+                                <span class="text-gray-600 ml-2" x-text="'(' + product.rating.count + ')'"></span>
                             </div>
 
+                            <!-- Buttons -->
                             <button x-on:click="addToCart(product)"
-                                class="mt-4 bg-blue-500 text-white rounded px-4 py-2 hover:bg-blue-600">
-                                Add to Cart
-                            </button>
+                                class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Add
+                                to Cart</button>
+                            <button x-on:click="addToWishlist(product)"
+                                class="w-full mt-2 text-white bg-pink-500 hover:bg-pink-600 focus:ring-4 focus:ring-pink-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Add
+                                to Wishlist</button>
                         </div>
                     </div>
                 </template>
             </div>
-        </main>
 
-        <!-- Footer -->
-        <footer class="bg-gray-800 text-white py-4 mt-8">
-            <div class="container mx-auto text-center">
-                <p>&copy; 2024 SwiftCart. All rights reserved.</p>
+            <!-- Product Detail Modal -->
+            <div x-show="isProductModalOpen"
+                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                x-cloak>
+                <div class="bg-white rounded-lg p-6 w-3/4 max-w-lg">
+                    <h2 class="text-2xl font-bold mb-4" x-text="selectedProduct.title"></h2>
+                    <img class="rounded-lg w-full h-64 object-cover mb-4" :src="selectedProduct.image" alt="" />
+                    <p class="text-gray-700 text-base mb-4" x-text="selectedProduct.description"></p>
+                    <div class="flex items-center mb-2">
+                        <span class="text-gray-900 font-bold text-lg" x-text="'$' + selectedProduct.price"></span>
+                        <template x-for="index in 5" :key="index">
+                            <svg class="w-4 h-4 fill-current text-yellow-500"
+                                :class="{'text-gray-300': index > Math.round(selectedProduct.rating.rate)}"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.793 1.4 8.182L12 18.896l-7.334 3.889 1.4-8.182L.587 9.21l8.2-1.192z" />
+                            </svg>
+                        </template>
+                        <span class="text-gray-600 ml-2"
+                            x-text="'(' + selectedProduct.rating.count + ')'"></span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button x-on:click="addToCart(selectedProduct)"
+                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Add
+                            to Cart</button>
+                        <button x-on:click="addToWishlist(selectedProduct)"
+                            class="w-full mt-2 text-white bg-pink-500 hover:bg-pink-600 focus:ring-4 focus:ring-pink-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Add
+                            to Wishlist</button>
+                    </div>
+                    <button x-on:click="closeProductModal"
+                        class="mt-4 w-full text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Close</button>
+                </div>
             </div>
-        </footer>
+        </main>
     </div>
 
+    <!-- AlpineJS Component -->
     <script>
         function storeData() {
             return {
-                categories: [],
-                products: [],
-                filteredProducts: [],
-                singleProduct: null,
+                searchQuery: '',
                 sorting: 'default',
+                isCategoryDropdownOpen: false,
                 activeCategory: 'all',
-                content: 'Welcome to SwiftCart!',
-
-                init() {
-                    this.loadCategories();
-                    this.loadProducts();
+                categories: ['Womens Clothing', 'Mens Clothing', 'Electronics', 'JEwellery'],
+                products: [],
+                cart: [],
+                wishlist: [],
+                isProductModalOpen: false,
+                selectedProduct: {},
+                get filteredProducts() {
+                    let products = this.products;
+                    if (this.searchQuery) {
+                        products = products.filter(product =>
+                            product.title.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                    }
+                    if (this.sorting === 'low') {
+                        products = products.sort((a, b) => a.price - b.price);
+                    } else if (this.sorting === 'high') {
+                        products = products.sort((a, b) => b.price - a.price);
+                    }
+                    return products;
                 },
-
-                loadCategories() {
-                    fetch('https://fakestoreapi.com/products/categories')
-                        .then(response => response.json())
-                        .then(data => {
-                            this.categories = data;
-                        });
+                toggleNavbar() {
+                    const navbarDropdown = document.getElementById('navbar-dropdown');
+                    navbarDropdown.classList.toggle('hidden');
                 },
-
-                loadProducts() {
-                    fetch('https://fakestoreapi.com/products')
-                        .then(response => response.json())
-                        .then(data => {
-                            this.products = data;
-                            this.filteredProducts = data;
-                        });
+                toggleCategoryDropdown() {
+                    this.isCategoryDropdownOpen = !this.isCategoryDropdownOpen;
                 },
-
                 loadProductsByCategory(category) {
                     this.activeCategory = category;
                     if (category === 'all') {
-                        this.filteredProducts = this.products;
+                        this.init();
                     } else {
-                        fetch(`https://fakestoreapi.com/products/category/${category}`)
+                        const url = `https://fakestoreapi.com/products/category/${category}`;
+                        fetch(url)
                             .then(response => response.json())
                             .then(data => {
-                                this.filteredProducts = data;
-                            });
+                                this.products = data;
+                            })
+                            .catch(error => console.error('Error fetching products by category:', error));
                     }
                 },
-
+                searchProducts() {
+                    const url = `https://fakestoreapi.com/products`;
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            this.products = data.filter(product =>
+                                product.title.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                        })
+                        .catch(error => console.error('Error searching products:', error));
+                },
                 sortProducts() {
-                    if (this.sorting === 'low') {
-                        this.filteredProducts.sort((a, b) => a.price - b.price);
-                    } else if (this.sorting === 'high') {
-                        this.filteredProducts.sort((a, b) => b.price - a.price);
-                    } else {
-                        this.filteredProducts = this.products;
-                    }
+                    // Sorting logic is handled in the computed property 'filteredProducts'
                 },
-
-                getRatingStars(rating) {
-                    const fullStars = Math.floor(rating);
-                    return Array(fullStars).fill().map((_, i) => i);
-                },
-
-                getBlankStars(rating) {
-                    const fullStars = Math.floor(rating);
-                    const blankStars = 5 - fullStars;
-                    return Array(blankStars).fill().map((_, i) => i);
-                },
-
                 addToCart(product) {
-                    alert(`Added ${product.title} to cart`);
+                    this.cart.push(product);
+                    alert('Product added to cart');
                 },
-
-                toggleNavbar() {
-                    const navbar = document.getElementById('navbar-dropdown');
-                    navbar.classList.toggle('hidden');
+                addToWishlist(product) {
+                    this.wishlist.push(product);
+                    alert('Product added to wishlist');
+                },
+                showProductDetails(product) {
+                    this.selectedProduct = product;
+                    this.isProductModalOpen = true;
+                },
+                closeProductModal() {
+                    this.isProductModalOpen = false;
+                },
+                init() {
+                    // Load all products initially
+                    const url = `https://fakestoreapi.com/products`;
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            this.products = data;
+                        })
+                        .catch(error => console.error('Error fetching all products:', error));
                 }
-            };
+            }
         }
     </script>
 </body>
