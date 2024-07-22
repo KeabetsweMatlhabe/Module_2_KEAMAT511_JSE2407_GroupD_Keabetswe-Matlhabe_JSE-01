@@ -147,8 +147,7 @@
                         x-on:click="showProductDetails(product)">
                         <img class="rounded-t-lg w-full h-48 object-cover" :src="product.image" alt="" />
                         <div class="p-5">
-                            <h5 class="text-gray-900 text-xl font-medium mb-2" x-text="product.title"></h5>
-                            <p class="text-gray-700 text-base mb-4" x-text="product.description"></p>
+                            <h5 class="text-gray-900 text-xl font-medium mb-2 truncate" x-text="product.title"></h5>
                             <div class="flex items-center mb-2">
                                 <span class="text-gray-900 font-bold text-lg" x-text="'$' + product.price"></span>
                                 <template x-for="index in 5" :key="index">
@@ -161,23 +160,14 @@
                                 </template>
                                 <span class="text-gray-600 ml-2" x-text="'(' + product.rating.count + ')'"></span>
                             </div>
-
-                            <!-- Buttons -->
-                            <button x-on:click="addToCart(product)"
-                                class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Add
-                                to Cart</button>
-                            <button x-on:click="addToWishlist(product)"
-                                class="w-full mt-2 text-white bg-pink-500 hover:bg-pink-600 focus:ring-4 focus:ring-pink-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Add
-                                to Wishlist</button>
+                            <span class="text-gray-700 text-sm" x-text="product.category"></span>
                         </div>
                     </div>
                 </template>
             </div>
 
             <!-- Product Detail Modal -->
-            <div x-show="isProductModalOpen"
-                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-                x-cloak>
+            <div x-show="isProductModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" x-cloak>
                 <div class="bg-white rounded-lg p-6 w-3/4 max-w-lg">
                     <h2 class="text-2xl font-bold mb-4" x-text="selectedProduct.title"></h2>
                     <img class="rounded-lg w-full h-64 object-cover mb-4" :src="selectedProduct.image" alt="" />
@@ -185,26 +175,17 @@
                     <div class="flex items-center mb-2">
                         <span class="text-gray-900 font-bold text-lg" x-text="'$' + selectedProduct.price"></span>
                         <template x-for="index in 5" :key="index">
-                            <svg class="w-4 h-4 fill-current text-yellow-500"
-                                :class="{'text-gray-300': index > Math.round(selectedProduct.rating.rate)}"
-                                viewBox="0 0 24 24">
-                                <path
-                                    d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.793 1.4 8.182L12 18.896l-7.334 3.889 1.4-8.182L.587 9.21l8.2-1.192z" />
+                            <svg class="w-4 h-4 fill-current text-yellow-500" :class="{'text-gray-300': index > Math.round(selectedProduct.rating.rate)}" viewBox="0 0 24 24">
+                                <path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.793 1.4 8.182L12 18.896l-7.334 3.889 1.4-8.182L.587 9.21l8.2-1.192z" />
                             </svg>
                         </template>
-                        <span class="text-gray-600 ml-2"
-                            x-text="'(' + selectedProduct.rating.count + ')'"></span>
+                        <span class="text-gray-600 ml-2" x-text="'(' + selectedProduct.rating.count + ')'"></span>
                     </div>
                     <div class="flex space-x-2">
-                        <button x-on:click="addToCart(selectedProduct)"
-                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Add
-                            to Cart</button>
-                        <button x-on:click="addToWishlist(selectedProduct)"
-                            class="w-full mt-2 text-white bg-pink-500 hover:bg-pink-600 focus:ring-4 focus:ring-pink-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Add
-                            to Wishlist</button>
+                        <button x-on:click="addToCart(selectedProduct)" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Add to Cart</button>
+                        <button x-on:click="addToWishlist(selectedProduct)" class="w-full mt-2 text-white bg-pink-500 hover:bg-pink-600 focus:ring-4 focus:ring-pink-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Add to Wishlist</button>
                     </div>
-                    <button x-on:click="closeProductModal"
-                        class="mt-4 w-full text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Close</button>
+                    <button x-on:click="closeProductModal" class="mt-4 w-full text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-4 py-2.5 text-center">Close</button>
                 </div>
             </div>
         </main>
@@ -218,7 +199,7 @@
                 sorting: 'default',
                 isCategoryDropdownOpen: false,
                 activeCategory: 'all',
-                categories: ['Womens Clothing', 'Mens Clothing', 'Electronics', 'JEwellery'],
+                categories: ['electronics', 'jewelery', "men's clothing", "women's clothing"],
                 products: [],
                 cart: [],
                 wishlist: [],
@@ -227,13 +208,15 @@
                 get filteredProducts() {
                     let products = this.products;
                     if (this.searchQuery) {
-                        products = products.filter(product =>
-                            product.title.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                        products = products.filter(product => product.title.toLowerCase().includes(this.searchQuery.toLowerCase()));
                     }
                     if (this.sorting === 'low') {
                         products = products.sort((a, b) => a.price - b.price);
                     } else if (this.sorting === 'high') {
                         products = products.sort((a, b) => b.price - a.price);
+                    }
+                    if (this.activeCategory !== 'all') {
+                        products = products.filter(product => product.category.toLowerCase() === this.activeCategory.toLowerCase());
                     }
                     return products;
                 },
@@ -246,30 +229,18 @@
                 },
                 loadProductsByCategory(category) {
                     this.activeCategory = category;
-                    if (category === 'all') {
-                        this.init();
-                    } else {
-                        const url = `https://fakestoreapi.com/products/category/${category}`;
-                        fetch(url)
-                            .then(response => response.json())
-                            .then(data => {
-                                this.products = data;
-                            })
-                            .catch(error => console.error('Error fetching products by category:', error));
-                    }
                 },
                 searchProducts() {
                     const url = `https://fakestoreapi.com/products`;
                     fetch(url)
                         .then(response => response.json())
                         .then(data => {
-                            this.products = data.filter(product =>
-                                product.title.toLowerCase().includes(this.searchQuery.toLowerCase()));
+                            this.products = data.filter(product => product.title.toLowerCase().includes(this.searchQuery.toLowerCase()));
                         })
                         .catch(error => console.error('Error searching products:', error));
                 },
                 sortProducts() {
-                    // Sorting logic is handled in the computed property 'filteredProducts'
+                   
                 },
                 addToCart(product) {
                     this.cart.push(product);
